@@ -1,0 +1,458 @@
+package com.example.proyectfinal.cup;
+
+import java_cup.runtime.*;
+import java.util.ArrayList;
+import classes.type.charts.*;
+import classes.type.*;
+import classes.*;
+
+class Parser;
+
+parser code {:
+
+String Errores;
+
+    public void syntax_error(Symbol cur_token) {
+        StringBuilder error = new StringBuilder();
+        error.append("ERROR SINTACTICO EN : ").append(symbl_name_from_id(cur_token.sym)).append("\n");
+        error.append("Linea ").append(cur_token.left).append("\n");
+        error.append("Columna ").append(cur_token.right).append("\n");
+        if (cur_token.value != null) {
+                error.append("Lexema: ").append(cur_token.value).append("\n");
+        }
+
+        Errores=error.toString();
+        System.out.println(error.toString());
+    }
+
+    private String quitarComillas(String identificador){
+            return identificador.replace("\"", "").replace("\"", "");
+    }
+
+
+:}
+
+non terminal typesGraphs, dataStructure, barGraph, barGraphCategory, barGraphColor, categoriesBarGraph,
+            categoryOnly, categoriesColors, categoryColorOnly, cakeGraph, cakeGraphNormal, cakeGraphColor, graphCakes, graphCakesColor,
+            graphCakeOnly, graphCakeColorOnly, pointsGraph, graphPointsStructure, graphPointsColorStructure, graphPointsNormal,
+            graphPointsColorPlus, graphPoints, graphPointsColor, lineGraph, structureNormalLine, structureColorLine,
+            pointsLineStructureR, pointsColorStructureR, pointsLineStructure, pointsLineColorStructure, pointsLine, graphsPoints,
+            pointsLineColor, pointsGraphLine, graphLineColor, colorGraphLine, endStructure, charts, conditionals, home, instruction, statement;
+non terminal String description, footer, categoriesColorOnly, chartCake;
+
+terminal    LLAVECORCHETEA, LLAVECORCHETEC, CORCHETEA, CORCHETEC, DOSPUNTOS, COMMA, WORD,
+            COLORWORD, TITLE, DESCRIPTION, KEYWORDS, HEADER, FOOTER, BACKGROUNDCOLOR, FONTFAMILY,
+            FONTSIZE, DATA, CATEGORY, VALUE, COLOR, LABEL, COPYRIGHT, LEGENDPOSITION, X, Y, PLUS, MINUS, ASTHERISK, DIVISION,
+            INCREMENT, DECREMENT, ASSIGNMENT, MULTIPLICATIONEQUAL, DIVISIONEQUAL, NUMBER, SIZE, NAME, POINTS, LINESTYLE,
+            CHART, XAXISLABEL, YAXISLABEL, EQUALS, DIFFERENT, GREATER, LESS, GREATEREQUAL, LESSEQUAL;
+start with home;
+
+home::= statement;
+
+
+statement::= LLAVECORCHETEA
+        TITLE
+        DOSPUNTOS
+        WORD:title
+        COMMA
+        description: description
+        KEYWORDS
+        DOSPUNTOS
+        CORCHETEA
+        WORD:words
+        CORCHETEC
+        COMMA
+        HEADER
+        DOSPUNTOS
+        LLAVECORCHETEA
+        TITLE
+        DOSPUNTOS
+        WORD: text
+        LLAVECORCHETEC
+        COMMA
+        footer:footer
+        BACKGROUNDCOLOR
+        DOSPUNTOS
+        COLORWORD
+        COMMA
+        FONTFAMILY
+        DOSPUNTOS
+        WORD
+        COMMA
+        FONTSIZE
+        DOSPUNTOS
+        WORD: size
+        typesGraphs
+        |   LLAVECORCHETEA
+            TITLE
+            DOSPUNTOS
+            WORD:title
+            COMMA
+            KEYWORDS
+            DOSPUNTOS
+            CORCHETEA
+            WORD:words
+            CORCHETEC
+            COMMA
+            HEADER
+            DOSPUNTOS
+            LLAVECORCHETEA
+            TITLE
+            DOSPUNTOS
+            WORD: text
+            LLAVECORCHETEC
+            COMMA
+            footer:footer
+            BACKGROUNDCOLOR
+            DOSPUNTOS
+            COLORWORD
+            COMMA
+            FONTFAMILY
+            DOSPUNTOS
+            WORD
+            COMMA
+            FONTSIZE
+            DOSPUNTOS
+            WORD: size
+            typesGraphs
+        ;
+
+
+
+
+description::= DESCRIPTION
+        DOSPUNTOS
+        WORD:description
+        COMMA
+        {:RESULT = quitarComillas(description.toString());:}
+        ;
+
+footer::= FOOTER
+        DOSPUNTOS
+        LLAVECORCHETEA
+        COPYRIGHT
+        DOSPUNTOS
+        WORD:word
+        LLAVECORCHETEC
+        COMMA
+        {:RESULT = quitarComillas(word.toString());:}
+        ;
+
+
+typesGraphs::= dataStructure barGraph
+            | dataStructure cakeGraph
+            | dataStructure pointsGraph
+            | dataStructure lineGraph
+            ;
+
+dataStructure::= LLAVECORCHETEA
+                DATA
+                DOSPUNTOS
+                CORCHETEA
+                ;
+
+barGraph::= barGraphCategory
+            | barGraphColor
+            ;
+
+barGraphCategory::= categoriesBarGraph CORCHETEC charts LLAVECORCHETEC
+                | categoriesBarGraph LLAVECORCHETEC
+                ;
+
+barGraphColor::= categoriesColors CORCHETEC charts LLAVECORCHETEC
+               | categoriesColors endStructure
+               ;
+
+categoriesBarGraph::=  categoryOnly COMMA categoriesBarGraph
+                | categoryOnly:categoryOnly
+                ;
+
+categoryOnly::= LLAVECORCHETEA
+            CATEGORY
+            DOSPUNTOS
+            WORD:word
+            COMMA
+            VALUE
+            DOSPUNTOS
+            NUMBER:value
+            LLAVECORCHETEC
+            ;
+
+categoriesColors::= categoryColorOnly COMMA categoriesColors
+                | categoriesColorOnly
+                ;
+
+categoryColorOnly::= LLAVECORCHETEA
+                CATEGORY
+                DOSPUNTOS
+                WORD:word
+                COMMA
+                VALUE
+                DOSPUNTOS
+                NUMBER:number
+                COLOR
+                DOSPUNTOS
+                COLORWORD:colorWord
+                LLAVECORCHETEC
+                ;
+
+cakeGraph::= cakeGraphNormal
+           | cakeGraphColor
+           ;
+
+cakeGraphNormal::= graphCakes CORCHETEC chartCake LLAVECORCHETEC
+                | graphCakes endStructure
+                ;
+
+cakeGraphColor::= graphCakesColor CORCHETEC chartCake LLAVECORCHETEC
+                | graphCakesColor endStructure
+                ;
+
+graphCakes::= graphCakeOnly COMMA graphCakes
+            | graphCakeOnly
+            ;
+
+graphCakesColor::= graphCakeColorOnly COMMA graphCakesColor
+                | graphCakeColorOnly
+                ;
+
+graphCakeOnly::= LLAVECORCHETEA
+                LABEL
+                DOSPUNTOS
+                WORD:word
+                COMMA
+                VALUE
+                DOSPUNTOS
+                NUMBER:number
+                LLAVECORCHETEC
+                {:RESULT = quitarComillas(word.toString());:}
+                ;
+
+graphCakeColorOnly::= LLAVECORCHETEA
+                LABEL
+                DOSPUNTOS
+                WORD:word
+                COMMA
+                VALUE
+                DOSPUNTOS
+                NUMBER:number
+                COMMA
+                COLOR
+                DOSPUNTOS
+                COLORWORD:colorWord
+                LLAVECORCHETEC
+                ;
+
+pointsGraph::= graphPointsStructure
+                | graphPointsColorStructure
+                ;
+
+graphPointsStructure::= graphPointsNormal CORCHETEC charts LLAVECORCHETEC
+                    graphPointsNormal endStructure
+                    ;
+
+graphPointsColorStructure::=  graphPointsColorPlus CORCHETEC charts LLAVECORCHETEC
+                            | graphPointsColorPlus endStructure
+                            ;
+
+graphPointsNormal::= graphPoints COMMA graphsPoints
+                    | graphPoints
+                    ;
+
+graphPointsColorPlus::= graphPointsColor COMMA graphPointsColorPlus
+                    | graphPointsColor
+                    ;
+
+graphPoints::= LLAVECORCHETEA
+                X
+                DOSPUNTOS
+                NUMBER : x
+                COMMA
+                Y
+                DOSPUNTOS
+                NUMBER : y
+                LLAVECORCHETEC
+                ;
+
+graphPointsColor::= LLAVECORCHETEA
+                    X
+                    DOSPUNTOS
+                    NUMBER : x
+                    COMMA
+                    Y
+                    DOSPUNTOS
+                    NUMBER : y
+                    COMMA
+                    SIZE
+                    DOSPUNTOS
+                    NUMBER :size
+                    COMMA
+                    COLOR
+                    DOSPUNTOS
+                    COLORWORD : color
+                    LLAVECORCHETEC
+                    ;
+
+lineGraph::= structureNormalLine
+           | structureColorLine
+           ;
+
+structureNormalLine::= pointsLineStructureR CORCHETEC charts LLAVECORCHETEC
+                    | pointsLineStructureR endStructure
+                    ;
+
+structureColorLine::= pointsColorStructureR CORCHETEC COMMA charts LLAVECORCHETEC
+                    | pointsColorStructureR endStructure
+                    ;
+
+pointsLineStructureR::= pointsLineStructure COMMA pointsLineStructureR
+                    | pointsLineStructure // structurejeje
+                    ;
+
+pointsColorStructureR::= pointsLineColorStructure COMMA pointsColorStructureR
+                        |pointsLineColorStructure //puntos de color
+                        ;
+
+pointsLineStructure::= LLAVECORCHETEA
+                    NAME
+                    DOSPUNTOS
+                    WORD
+                    COMMA
+                    POINTS
+                    DOSPUNTOS
+                    CORCHETEA
+                    pointsLine //puntos de linea
+                    CORCHETEC
+                    LLAVECORCHETEC
+                    ;
+
+pointsLineColorStructure::= LLAVECORCHETEA
+                        NAME
+                        DOSPUNTOS
+                        WORD:name
+                        COMMA
+                        POINTS
+                        DOSPUNTOS
+                        CORCHETEA
+                        pointsLineColor:pointLineColor //puntos de color
+                        CORCHETEC
+                        COMMA
+                        colorGraphLine:colorGraphLine //retorna un objeto color
+                        LLAVECORCHETEC
+
+                        ;
+
+pointsLine::= pointsGraphLine COMMA pointsLine
+
+            | pointsGraphLine : pointsGraphLine
+            ;
+
+pointsLineColor::= graphLineColor COMMA pointsLineColor
+                | graphLineColor:graphLineColor
+                ;
+
+pointsGraphLine::= LLAVECORCHETEA
+                X
+                DOSPUNTOS
+                NUMBER:x
+                COMMA
+                Y
+                DOSPUNTOS
+                NUMBER:y
+                LLAVECORCHETEC
+                {:CoordinatesLine coordinatesLine = new CoordinatesLine();
+                coordinatesLine.setX(x.toString());
+                coordinatesLine.setY(y.toString());
+                RESULT = coordinatesLine;
+                :}
+                ;
+
+graphLineColor::= LLAVECORCHETEA
+                X
+                DOSPUNTOS
+                NUMBER:x
+                COMMA
+                Y
+                DOSPUNTOS
+                NUMBER:y
+                COMMA
+                LABEL
+                DOSPUNTOS
+                WORD:punto
+                LLAVECORCHETEC
+                {:CoordinatesLine coordinatesLine = new CoordinatesLine();
+                coordinatesLine.setX(x.toString());
+                coordinatesLine.setY(y.toString());
+                coordinatesLine.setLabel(punto.toString());
+                RESULT = coordinatesLine;
+                :}
+                ;
+
+colorGraphLine::= COLOR
+            DOSPUNTOS
+            COLORWORD:color
+            COMMA
+            LINESTYLE
+            DOSPUNTOS
+            WORD:lineStyle
+            {: LineSeries lineSeries = new LineSeries();
+            lineSeries.setColor(quitarComillas(color.toString()));
+            lineSeries.setLineStyle(quitarComillas(lineStyle.toString()));
+            RESULT = lineSeries;:}
+            ;
+
+endStructure::= CORCHETEC LLAVECORCHETEC ;
+
+chartCake::= CHART
+        DOSPUNTOS
+        LLAVECORCHETEA
+        TITLE
+        DOSPUNTOS
+        WORD:title
+        COMMA
+        LEGENDPOSITION
+        DOSPUNTOS
+        WORD:legendPosition
+        LLAVECORCHETEC
+        LLAVECORCHETEC
+        {:
+        ChartCake chartCake = new ChartCake(quitarComillas(title.toString()), quitarComillas(legendPosition.toString()));
+        RESULT = chartCake;
+        :}
+        ;
+
+charts::= CHART
+        DOSPUNTOS
+        LLAVECORCHETEA
+        TITLE
+        WORD:title
+        XAXISLABEL
+        DOSPUNTOS
+        WORD:xAxisLabel
+        YAXISLABEL
+        DOSPUNTOS
+        WORD:yAxisLabel
+        LLAVECORCHETEC
+        LLAVECORCHETEC
+        {: Chart chart = new Chart(quitarComillas(title,toString()), quitarComillas(xAxisLabel.toString()), quitarComillas(yAxisLabel.toString()));
+        RESULT = chart;:}
+        ;
+
+conditionals::= EQUALS
+        | DIFFERENT
+        | GREATER
+        | LESS
+        | GREATEREQUAL
+        | LESSEQUAL
+        ;
+
+operator::= PLUS
+        | MINUS
+        | ASTHERISK
+        | DIVISION
+        | INCREMENT
+        | DECREMENT
+        | ASSIGNMENT
+        | MULTIPLICATIONEQUAL
+        | DIVISIONEQUAL
+        ;
